@@ -6,8 +6,8 @@ import { ShoppingListComponent } from './shopping-list/shopping-list.component';
 import { RecipeStartComponent } from './recipes/recipe-start/recipe-start.component';
 import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
 import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
-import { TrainTestComponent } from './train-test/train-test.component';
-import { ResultComponent } from './result/result.component';
+import { TrainComponent } from './train/train.component';
+import { TestComponent } from './test/test.component';
 
 const appRoutes: Routes = [
   { path: '', redirectTo: '/recipes', pathMatch: 'full' },
@@ -18,8 +18,8 @@ const appRoutes: Routes = [
     { path: ':id/edit', component: RecipeEditComponent },
   ] },
   { path: 'shopping-list', component: ShoppingListComponent },
-  { path: 'train-test', component: TrainTestComponent },
-  { path: 'result', component: ResultComponent }
+  { path: 'train', component: TrainComponent },
+  { path: 'test', component: TestComponent }
 ];
 
 @NgModule({

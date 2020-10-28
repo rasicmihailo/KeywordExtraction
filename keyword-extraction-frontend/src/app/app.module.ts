@@ -16,11 +16,11 @@ import { ShoppingListService } from './shopping-list/shopping-list.service';
 import { AppRoutingModule } from './app-routing.module';
 import { RecipeStartComponent } from './recipes/recipe-start/recipe-start.component';
 import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
-import { TrainTestComponent } from './train-test/train-test.component';
-import { ResultComponent } from './result/result.component';
+import { TrainComponent } from './train/train.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatRadioModule } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
+import { TestComponent } from './test/test.component';
 
 @NgModule({
   declarations: [
@@ -35,8 +35,8 @@ import { HttpClientModule } from '@angular/common/http';
     DropdownDirective,
     RecipeStartComponent,
     RecipeEditComponent,
-    TrainTestComponent,
-    ResultComponent,
+    TrainComponent,
+    TestComponent
   ],
   imports: [
     BrowserModule,
