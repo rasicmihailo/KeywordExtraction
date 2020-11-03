@@ -47,11 +47,7 @@ public class KeywordExtractionController {
     }
 
     @GetMapping("/check")
-    public List<Keyword> check(@RequestBody String txt) throws IOException {
-        List<Keyword> keywords = new ArrayList<>();
-        utilities.check(txt).forEach(keyword -> {
-            keywords.add(keyword);
-        });
-        return keywords;
+    public List<Keyword> check(@RequestBody TrainTest txt) throws IOException {
+        return utilities.check(txt.getText());
     }
 }
