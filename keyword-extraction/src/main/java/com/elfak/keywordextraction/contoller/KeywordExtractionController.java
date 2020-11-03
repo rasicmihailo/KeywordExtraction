@@ -23,18 +23,20 @@ public class KeywordExtractionController {
     public List<Keyword> train(@RequestBody TrainTest txt) throws IOException {
 
         store.getKeywords().clear();
-        StringBuilder stringBuilder = new StringBuilder();
+        store.getAds().clear();
 
         utilities.guessFromString(txt.getText()).forEach(keyword -> {
             // dinamicki odredjujemo koja frekvencija je dovoljna da bismo uzimali rec u obzir
             if (keyword.getFrequency() > txt.getText().length()/2000 || (keyword.getFrequency() > txt.getText().length()/4000 && !keyword.isBoolean())) {
                 // ne smemo rec bez da izbacimo pre ovog trenutka jer koristimo u funkciji Utilities.trueOrFalse()
-                if (!keyword.getStem().equals("bez")) {
-                    stringBuilder.append(keyword.toString() + "\n");
+                if (!keyword.getStem().equals("bez") && !keyword.getStem().equals("stop11stop11stop")) {
                     store.getKeywords().add(keyword);
                 }
             }
         });
+
+
+        utilities.createAds(txt.getText());
 
         return store.getKeywords();
     }

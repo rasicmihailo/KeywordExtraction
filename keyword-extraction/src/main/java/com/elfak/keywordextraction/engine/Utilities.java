@@ -257,6 +257,20 @@ public class Utilities {
         }
     }
 
+    public List<Ad> createAds(String input) {
+        String[] ads = input.split("stop11stop11stop\n");
+        Arrays.stream(ads).forEach(ad -> {
+            try {
+                String[] titleAndContent = ad.split("\n", 2);
+                store.getAds().add(Ad.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(check(ad)).build());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return store.getAds();
+    }
+
     //funkcija koja vraca prethodnu ili narednu rec u zavisnosti od toga koja ima vise brojeva
     private String stringWithMoreDigits(String str1, String str2) {
         int count1 = 0;
