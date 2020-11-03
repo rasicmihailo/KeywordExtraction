@@ -257,18 +257,54 @@ public class Utilities {
         }
     }
 
-    public List<Ad> createAds(String input) {
+    public List<Advertisement> createAds(String input) {
         String[] ads = input.split("stop11stop11stop\n");
         Arrays.stream(ads).forEach(ad -> {
             try {
                 String[] titleAndContent = ad.split("\n", 2);
-                store.getAds().add(Ad.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(check(ad)).build());
+                store.getAdvertisements().add(Advertisement.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(check(ad)).build());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
 
-        return store.getAds();
+        return store.getAdvertisements();
+    }
+
+    // funkcija koja pronalazi slicne oglase
+    public List<Advertisement> checkAd(String adTxt) {
+        Advertisement advertisement = null;
+        try {
+            String[] titleAndContent = adTxt.split("\n", 2);
+            advertisement = Advertisement.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(check(adTxt)).build();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (advertisement == null) {
+            return null;
+        }
+
+        // proveravamo uvek dal je veci od poslednjeg, ali moramo onda da sortiramo
+        List<Advertisement> advertisements = new ArrayList<>();
+        int i = -1;
+        for (int j = 0; j < store.getAdvertisements().size(); j++) {
+            if (i < 2) {
+                advertisements.add(store.getAdvertisements().get(j));
+                i++;
+                Collections.sort(advertisements);
+            } else {
+                Advertisement advertisementMin = advertisements.get(i);
+
+                // manje zato sto compareTo vraca negativan znak, zbog sortiranja u opadajucem redosledu
+                if (advertisement.compareTo(store.getAdvertisements().get(j)) < advertisement.compareTo(advertisementMin)) {
+                    advertisements.remove(i);
+                    advertisements.add(store.getAdvertisements().get(j));
+                    Collections.sort(advertisements);
+                }
+            }
+        }
+
+        return advertisements;
     }
 
     //funkcija koja vraca prethodnu ili narednu rec u zavisnosti od toga koja ima vise brojeva

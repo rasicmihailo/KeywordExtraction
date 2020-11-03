@@ -1,14 +1,10 @@
 package com.elfak.keywordextraction.contoller;
 
-import com.elfak.keywordextraction.engine.Keyword;
-import com.elfak.keywordextraction.engine.Store;
-import com.elfak.keywordextraction.engine.TrainTest;
-import com.elfak.keywordextraction.engine.Utilities;
+import com.elfak.keywordextraction.engine.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -23,7 +19,7 @@ public class KeywordExtractionController {
     public List<Keyword> train(@RequestBody TrainTest txt) throws IOException {
 
         store.getKeywords().clear();
-        store.getAds().clear();
+        store.getAdvertisements().clear();
 
         utilities.guessFromString(txt.getText()).forEach(keyword -> {
             // dinamicki odredjujemo koja frekvencija je dovoljna da bismo uzimali rec u obzir
@@ -49,5 +45,10 @@ public class KeywordExtractionController {
     @GetMapping("/check")
     public List<Keyword> check(@RequestBody TrainTest txt) throws IOException {
         return utilities.check(txt.getText());
+    }
+
+    @GetMapping("/check-ads")
+    public List<Advertisement> checkAds(@RequestBody TrainTest txt) {
+        return utilities.checkAd(txt.getText());
     }
 }

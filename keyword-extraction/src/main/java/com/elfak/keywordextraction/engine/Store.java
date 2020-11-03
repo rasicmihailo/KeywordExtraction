@@ -15,7 +15,7 @@ public class Store {
 
     List<String> serbianStopSet = new ArrayList<>();
 
-    List<Ad> ads = new ArrayList<>();
+    List<Advertisement> advertisements = new ArrayList<>();
 
     @PostConstruct
     private void initStore() {
