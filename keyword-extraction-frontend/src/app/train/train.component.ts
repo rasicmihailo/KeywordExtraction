@@ -20,7 +20,6 @@ export class TrainComponent implements OnInit {
     this.http.post(`http://localhost:8080/train`, new TrainTest(this.text)).subscribe(
       data => {
         this.keywords = JSON.parse(JSON.stringify(data));
-        console.log(this.keywords)
       },
       error => {
       }

@@ -12,6 +12,8 @@ export class SearchComponent implements OnInit {
 
   searchText: string = '';
 
+  private advertisement: Advertisement;
+
   private advertisements: Advertisement[] = [];
 
   private keywords: Keyword[] = [];
@@ -28,10 +30,10 @@ export class SearchComponent implements OnInit {
   }
 
   search() {
+    this.advertisement = null;
     this.http.get(`http://localhost:8080/search?s=` + this.searchText).subscribe(
       data => {
         this.advertisements = JSON.parse(JSON.stringify(data));
-        console.log(this.advertisements)
       },
       error => {
       });
@@ -39,5 +41,9 @@ export class SearchComponent implements OnInit {
   searchByKeyword(keyword: Keyword) {
     this.searchText = keyword.stem;
     this.search();
+  }
+
+  advertisementCLicked(advertisement: Advertisement) {
+    this.advertisement = advertisement;
   }
 }
