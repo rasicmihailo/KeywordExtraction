@@ -11,13 +11,15 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatRadioModule } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { TestComponent } from './test/test.component';
+import { SearchComponent } from './search/search.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HeaderComponent,
     TrainComponent,
-    TestComponent
+    TestComponent,
+    SearchComponent
   ],
   imports: [
     BrowserModule,

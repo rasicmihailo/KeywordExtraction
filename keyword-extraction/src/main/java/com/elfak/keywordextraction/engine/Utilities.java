@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -288,7 +289,7 @@ public class Utilities {
         List<Advertisement> advertisements = new ArrayList<>();
         int i = -1;
         for (int j = 0; j < store.getAdvertisements().size(); j++) {
-            if (i < 2) {
+            if (i < 1) {
                 advertisements.add(store.getAdvertisements().get(j));
                 i++;
                 Collections.sort(advertisements);
@@ -304,6 +305,24 @@ public class Utilities {
             }
         }
 
+        return advertisements;
+    }
+
+    public List<Advertisement> getAds(String s) {
+        List<Keyword> keywords = store.keywords.stream().filter(keyword1 -> keyword1.getStem().equals(s)).collect(Collectors.toList());
+
+        List<Advertisement> advertisements = new ArrayList<>();
+
+        for (int j = 0; j < store.getAdvertisements().size(); j++) {
+            boolean containsKeyword = keywords.size() > 0 && store.getAdvertisements().get(j).keywords.contains(keywords.get(0));
+            boolean containsWordInTitle = store.getAdvertisements().get(j).title.toLowerCase().contains(s.toLowerCase());
+            if (containsKeyword || containsWordInTitle) {
+                advertisements.add(store.getAdvertisements().get(j));
+            }
+        }
+
+        Collections.sort(advertisements);
+        
         return advertisements;
     }
 
@@ -350,4 +369,6 @@ public class Utilities {
             return false;
         }
     }
+
+
 }

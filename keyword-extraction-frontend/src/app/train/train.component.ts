@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Train } from '../shared/train.model';
+import { TrainTest } from '../shared/train-test.model';
 import { Keyword } from '../shared/keyword.model';
 
 @Component({
@@ -17,7 +17,7 @@ export class TrainComponent implements OnInit {
   ngOnInit() {
   }
   btnClicked() {
-    this.http.post(`http://localhost:8080/train`, new Train(this.text)).subscribe(
+    this.http.post(`http://localhost:8080/train`, new TrainTest(this.text)).subscribe(
       data => {
         this.keywords = JSON.parse(JSON.stringify(data));
         console.log(this.keywords)

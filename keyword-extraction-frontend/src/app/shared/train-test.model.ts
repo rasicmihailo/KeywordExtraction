@@ -1,3 +1,3 @@
-export class Train {
+export class TrainTest {
     constructor(public text: string) {}
 }

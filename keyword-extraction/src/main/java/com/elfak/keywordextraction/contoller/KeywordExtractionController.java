@@ -23,7 +23,7 @@ public class KeywordExtractionController {
 
         utilities.guessFromString(txt.getText()).forEach(keyword -> {
             // dinamicki odredjujemo koja frekvencija je dovoljna da bismo uzimali rec u obzir
-            if (keyword.getFrequency() > txt.getText().length()/2000 || (keyword.getFrequency() > txt.getText().length()/4000 && !keyword.isBoolean())) {
+            if (keyword.getFrequency() > 5) {
                 // ne smemo rec bez da izbacimo pre ovog trenutka jer koristimo u funkciji Utilities.trueOrFalse()
                 if (!keyword.getStem().equals("bez") && !keyword.getStem().equals("stop11stop11stop")) {
                     store.getKeywords().add(keyword);
@@ -42,13 +42,18 @@ public class KeywordExtractionController {
         return store.getKeywords();
     }
 
-    @GetMapping("/check")
+    @PostMapping("/check")
     public List<Keyword> check(@RequestBody TrainTest txt) throws IOException {
         return utilities.check(txt.getText());
     }
 
-    @GetMapping("/check-ads")
+    @PostMapping("/check-ads")
     public List<Advertisement> checkAds(@RequestBody TrainTest txt) {
         return utilities.checkAd(txt.getText());
+    }
+
+    @GetMapping("/search")
+    public List<Advertisement> search(@RequestParam String s) {
+        return utilities.getAds(s);
     }
 }
