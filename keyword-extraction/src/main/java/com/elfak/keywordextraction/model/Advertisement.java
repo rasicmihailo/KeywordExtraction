@@ -21,7 +21,7 @@ public class Advertisement implements Comparable<Advertisement> {
     @Column
     private String title;
 
-    @Column
+    @Column(columnDefinition = "longtext")
     private String content;
 
     @ManyToMany(fetch = FetchType.LAZY)
