@@ -16,21 +16,20 @@
     </div>
     <div class="col-md-5" style="margin-left: 20px;">
         <div>
-            <h4 class="list-group-item-heading">Kljucne reci</h4>
+            <h4 *ngIf="keywords.length > 0" class="list-group-item-heading">Kljucne reci</h4>
         </div>
         <ul class="list-group">
             <li
               class="list-group-item"
               *ngFor="let keyword of keywords">
-              {{ keyword.stem }} - {{ keyword.frequency }}
+              {{ keyword.frequency }} - {{ keyword.stem }}: {{ keyword.value }}
             </li>
           </ul>
         <div style="margin-top: 10px;">
-            <h4 class="list-group-item-heading">Slicni oglasi</h4>
+            <h4 *ngIf="advertisements.length > 0" class="list-group-item-heading">Slicni oglasi</h4>
         </div>
         <a
             *ngFor="let ad of advertisements"
-            (click)="advertisementCLicked(ad)"
             style="cursor: pointer;"
             class="list-group-item clearfix">
             <div class="pull-left">

@@ -1,4 +1,4 @@
-package com.elfak.keywordextraction.engine;
+package com.elfak.keywordextraction.model;
 
 import lombok.Getter;
 

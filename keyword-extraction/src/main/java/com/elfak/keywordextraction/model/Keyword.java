@@ -1,27 +1,56 @@
-package com.elfak.keywordextraction.engine;
+package com.elfak.keywordextraction.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+@NoArgsConstructor
+@Data
+@Entity
+@Table(name = "keywords")
 public class Keyword implements Comparable<Keyword> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-    private final String stem;
-    private final Set<String> terms = new HashSet<String>();
+    @Column
+    private String stem;
+
+    @OneToMany(mappedBy = "keyword", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Term> terms = new HashSet<>();
+
+    @Column
     private int frequency = 0;
+
     // broj term-a koji ne sadrze ni jednu brojku u reci pre i posle
+    @Column
     private int booleans = 0;
+
     // true ako je booleans*2 >= frequency
+    @Column
     private boolean isBoolean;
-    // vrednost koja se dodeljuje u check(), ako je isBoolean=true onda value moze da bude true ili false, inace se uzima prethodna ili naredna rec (ona koja ima vise brojeva u sebi)
+
+    // vrednost koja se dodeljuje u testKeywords(), ako je isBoolean=true onda value moze da bude true ili false, inace se uzima prethodna ili naredna rec (ona koja ima vise brojeva u sebi)
+    @Transient
     private String value;
+
+    @ManyToMany(mappedBy = "keywords", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Advertisement> advertisements;
 
     public Keyword(String stem) {
         this.stem = stem;
     }
 
     public void add(String term, boolean isBoolean) {
-        terms.add(term);
+        terms.add(Term.builder().term(term).build());
         frequency++;
         if (isBoolean) {
             booleans++;
@@ -60,7 +89,7 @@ public class Keyword implements Comparable<Keyword> {
         return stem;
     }
 
-    public Set<String> getTerms() {
+    public Set<Term> getTerms() {
         return terms;
     }
 
@@ -84,13 +113,6 @@ public class Keyword implements Comparable<Keyword> {
                 ", terms=" + terms +
                 ", frequency=" + frequency +
                 ", isBoolean=" + isBoolean +
-                '}';
-    }
-
-    public String print() {
-        return "Keyword{" +
-                "stem='" + stem + '\'' +
-                ", value=" + value +
                 '}';
     }
 }

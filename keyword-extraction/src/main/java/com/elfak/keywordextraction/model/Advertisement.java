@@ -1,7 +1,8 @@
-package com.elfak.keywordextraction.engine;
+package com.elfak.keywordextraction.model;
 
 import lombok.*;
 
+import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,12 +10,22 @@ import java.util.stream.Collectors;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
+@Entity
+@Table(name = "advertisements")
 public class Advertisement implements Comparable<Advertisement> {
-    String title;
-    String content;
-    List<Keyword> keywords;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @Column
+    private String title;
+
+    @Column
+    private String content;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    private List<Keyword> keywords;
 
     @Override
     public int compareTo(Advertisement advertisement) {

@@ -5,17 +5,13 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 @Component
 @Getter
-public class Store {
-    List<Keyword> keywords = new LinkedList<>();
+public class StopSet {
 
     List<String> serbianStopSet = new ArrayList<>();
-
-    List<Advertisement> advertisements = new ArrayList<>();
 
     @PostConstruct
     private void initStore() {
@@ -46,5 +42,6 @@ public class Store {
         serbianStopSet.add("ovo");
         serbianStopSet.add("ovom");
         serbianStopSet.add("ono");
+        serbianStopSet.add("mozet");
     }
 }

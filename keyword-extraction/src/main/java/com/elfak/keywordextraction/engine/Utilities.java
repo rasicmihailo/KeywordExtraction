@@ -1,5 +1,9 @@
 package com.elfak.keywordextraction.engine;
 
+import com.elfak.keywordextraction.model.Advertisement;
+import com.elfak.keywordextraction.model.Keyword;
+import com.elfak.keywordextraction.repository.AdvertisementRepository;
+import com.elfak.keywordextraction.repository.KeywordRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.StopFilter;
@@ -21,7 +25,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class Utilities {
 
-    private final Store store;
+    private final StopSet store;
+
+    private final AdvertisementRepository advertisementRepository;
+
+    private final KeywordRepository keywordRepository;
 
     public String stem(String term) throws IOException {
 
@@ -82,7 +90,7 @@ public class Utilities {
         return null;
     }
 
-    public List<Keyword> guessFromString(String input) throws IOException {
+    public List<Keyword> trainKeywords(String input) throws IOException {
 
         TokenStream tokenStream = null;
         try {
@@ -172,8 +180,22 @@ public class Utilities {
 
     }
 
-    public List<Keyword> check(String input) throws IOException {
-        List<Keyword> store = this.store.getKeywords();
+    public List<Advertisement> trainAds(String input) {
+        String[] ads = input.split("stop11stop11stop\n");
+        Arrays.stream(ads).forEach(ad -> {
+            try {
+                String[] titleAndContent = ad.split("\n", 2);
+                advertisementRepository.save(Advertisement.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(testKeywords(ad)).build());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return (List<Advertisement>) advertisementRepository.findAll();
+    }
+
+    public List<Keyword> testKeywords(String input) throws IOException {
+        List<Keyword> store = this.keywordRepository.findAll();
         TokenStream tokenStream = null;
         try {
             // improvizacija za spajanje prideva sa imenicom
@@ -258,26 +280,12 @@ public class Utilities {
         }
     }
 
-    public List<Advertisement> createAds(String input) {
-        String[] ads = input.split("stop11stop11stop\n");
-        Arrays.stream(ads).forEach(ad -> {
-            try {
-                String[] titleAndContent = ad.split("\n", 2);
-                store.getAdvertisements().add(Advertisement.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(check(ad)).build());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-
-        return store.getAdvertisements();
-    }
-
     // funkcija koja pronalazi slicne oglase
-    public List<Advertisement> checkAd(String adTxt) {
+    public List<Advertisement> testAds(String adTxt) {
         Advertisement advertisement = null;
         try {
             String[] titleAndContent = adTxt.split("\n", 2);
-            advertisement = Advertisement.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(check(adTxt)).build();
+            advertisement = Advertisement.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(testKeywords(adTxt)).build();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -285,21 +293,26 @@ public class Utilities {
             return null;
         }
 
+        advertisementRepository.save(advertisement);
+
         // proveravamo uvek dal je veci od poslednjeg, ali moramo onda da sortiramo
         List<Advertisement> advertisements = new ArrayList<>();
+
+        List<Advertisement> advertisementRepository = (List<Advertisement>) this.advertisementRepository.findAll();
         int i = -1;
-        for (int j = 0; j < store.getAdvertisements().size(); j++) {
-            if (i < 1) {
-                advertisements.add(store.getAdvertisements().get(j));
+        for (int j = 0; j < advertisementRepository.size(); j++) {
+            // nalazimo 5 najslicnijih oglasa
+            if (i < 4) {
+                advertisements.add(advertisementRepository.get(j));
                 i++;
                 Collections.sort(advertisements);
             } else {
                 Advertisement advertisementMin = advertisements.get(i);
 
                 // manje zato sto compareTo vraca negativan znak, zbog sortiranja u opadajucem redosledu
-                if (advertisement.compareTo(store.getAdvertisements().get(j)) < advertisement.compareTo(advertisementMin)) {
+                if (advertisement.compareTo(advertisementRepository.get(j)) < advertisement.compareTo(advertisementMin)) {
                     advertisements.remove(i);
-                    advertisements.add(store.getAdvertisements().get(j));
+                    advertisements.add(advertisementRepository.get(j));
                     Collections.sort(advertisements);
                 }
             }
@@ -308,16 +321,22 @@ public class Utilities {
         return advertisements;
     }
 
-    public List<Advertisement> getAds(String s) {
-        List<Keyword> keywords = store.keywords.stream().filter(keyword1 -> keyword1.getStem().equals(s)).collect(Collectors.toList());
+    public List<Advertisement> searchAds(String adTxt) throws IOException {
+        List<Advertisement> advertisementRepository = (List<Advertisement>) this.advertisementRepository.findAll();
+        List<Keyword> keywordRepository = this.keywordRepository.findAll();
+
+        List<Keyword> keywords = keywordRepository.stream().filter(keyword1 -> keyword1.getStem().equals(adTxt)).collect(Collectors.toList());
 
         List<Advertisement> advertisements = new ArrayList<>();
 
-        for (int j = 0; j < store.getAdvertisements().size(); j++) {
-            boolean containsKeyword = keywords.size() > 0 && store.getAdvertisements().get(j).keywords.contains(keywords.get(0));
-            boolean containsWordInTitle = store.getAdvertisements().get(j).title.toLowerCase().contains(s.toLowerCase());
+        for (int j = 0; j < advertisementRepository.size(); j++) {
+            boolean containsKeyword = keywords.size() > 0 && advertisementRepository.get(j).getKeywords().contains(keywords.get(0));
+            boolean containsWordInTitle = advertisementRepository.get(j).getTitle().toLowerCase().contains(adTxt.toLowerCase());
             if (containsKeyword || containsWordInTitle) {
-                advertisements.add(store.getAdvertisements().get(j));
+                Advertisement advertisement = advertisementRepository.get(j);
+                // da bismo nasli value za odredjenu kljucnu rec, moramo da je propustimo ceo oglas kroz funkciju testKeywords()
+                advertisement.setKeywords(testKeywords(advertisement.getTitle().concat("\n").concat(advertisement.getContent())));
+                advertisements.add(advertisement);
             }
         }
 
