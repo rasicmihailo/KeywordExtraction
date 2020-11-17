@@ -18,7 +18,7 @@ import java.util.List;
 @CrossOrigin
 public class KeywordExtractionController {
 
-    private final Utilities utilities;
+    private final Engine engine;
     private final AdvertisementRepository advertisementRepository;
     private final KeywordRepository keywordRepository;
     private final TermRepository termRepository;
@@ -29,34 +29,20 @@ public class KeywordExtractionController {
         termRepository.deleteAll();
         keywordRepository.deleteAll();
 
-        List<Keyword> keywordsFound = utilities.trainKeywords(txt.getText());
-
-        // maksimalno 100 keyword-ova
-        keywordsFound.stream().limit(100).forEach(keyword -> {
-            // ne uzimamo u obzir reci sa frekvencijom manjom od 2
-            if (keyword.getFrequency() > 1) {
-                // ne smemo rec bez da izbacimo pre ovog trenutka jer koristimo u funkciji Utilities.trueOrFalse()
-                if (!keyword.getStem().equals("bez") && !keyword.getStem().equals("stop11stop11stop")) {
-                    Keyword keywordSaved = keywordRepository.save(keyword);
-                    keyword.getTerms().stream().forEach(term -> term.setKeyword(keywordSaved));
-                    termRepository.saveAll(keyword.getTerms());
-                }
-            }
-        });
-
-        utilities.trainAds(txt.getText());
+        engine.trainKeywords(txt.getText());
+        engine.trainAds(txt.getText());
 
         return keywordRepository.findAll();
     }
 
-    @PostMapping("/check")
+    @PostMapping("/check-keywords")
     public List<Keyword> check(@RequestBody TrainTest txt) throws IOException {
-        return utilities.testKeywords(txt.getText());
+        return engine.testKeywords(txt.getText());
     }
 
     @PostMapping("/check-ads")
     public List<Advertisement> checkAds(@RequestBody TrainTest txt) {
-        return utilities.testAds(txt.getText());
+        return engine.testAds(txt.getText());
     }
 
     @GetMapping("/keywords")
@@ -66,6 +52,6 @@ public class KeywordExtractionController {
 
     @GetMapping("/search")
     public List<Advertisement> search(@RequestParam String s) throws IOException {
-        return utilities.searchAds(s);
+        return engine.searchAds(s);
     }
 }

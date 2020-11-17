@@ -4,6 +4,7 @@ import com.elfak.keywordextraction.model.Advertisement;
 import com.elfak.keywordextraction.model.Keyword;
 import com.elfak.keywordextraction.repository.AdvertisementRepository;
 import com.elfak.keywordextraction.repository.KeywordRepository;
+import com.elfak.keywordextraction.repository.TermRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.StopFilter;
@@ -23,74 +24,16 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class Utilities {
+public class Engine {
 
-    private final StopSet store;
+    private final StopSet stopSet;
 
     private final AdvertisementRepository advertisementRepository;
-
     private final KeywordRepository keywordRepository;
+    private final TermRepository termRepository;
 
-    public String stem(String term) throws IOException {
-
-        TokenStream tokenStream = null;
-        try {
-
-            // tokenizer
-            ClassicTokenizer classicTokenizer = new ClassicTokenizer();
-            classicTokenizer.setReader(new StringReader(term));
-
-            tokenStream = new PorterStemFilter(classicTokenizer);
-
-            // set za korene reci (zbog duplikata)
-            Set<String> stems = new HashSet<String>();
-            CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
-            tokenStream.reset();
-            while (tokenStream.incrementToken()) {
-                stems.add(token.toString());
-            }
-
-            // ako je koren manji od 2
-            if (stems.size() != 1) {
-                return null;
-            }
-            String stem = stems.iterator().next();
-            // ako koren nema brojeve i slova
-            if (!stem.matches("[a-zA-Z0-9-]+")) {
-                return null;
-            }
-
-            return stem;
-
-        } finally {
-            if (tokenStream != null) {
-                tokenStream.close();
-            }
-        }
-
-    }
-
-    public <T> T find(Collection<T> collection, T example) {
-        for (T element : collection) {
-            if (element.equals(example)) {
-                return element;
-            }
-        }
-        collection.add(example);
-        return example;
-    }
-
-    // ne dodajemo rec u Store
-    public <T> T findOnly(Collection<T> collection, T example) {
-        for (T element : collection) {
-            if (element.equals(example)) {
-                return element;
-            }
-        }
-        return null;
-    }
-
-    public List<Keyword> trainKeywords(String input) throws IOException {
+    // funkcija koja pronalazi kljucne reci u tekstu i dodaje ih u bazu
+    public void trainKeywords(String input) throws IOException {
 
         TokenStream tokenStream = null;
         try {
@@ -157,7 +100,7 @@ public class Utilities {
             }
 
             // izbacivanje veznika
-            for (String stop : this.store.getSerbianStopSet()) {
+            for (String stop : this.stopSet.getSerbianStopSet()) {
                 for (Keyword keyword : keywords) {
                     if (keyword.getStem().equals(stop)) {
                         keywords.remove(keyword);
@@ -169,7 +112,21 @@ public class Utilities {
             // sortiranje po frekvenciji
             Collections.sort(keywords);
 
-            return keywords;
+
+
+
+            // maksimalno 100 keyword-ova
+            keywords.stream().limit(100).forEach(keyword -> {
+                // ne uzimamo u obzir reci sa frekvencijom manjom od 2
+                if (keyword.getFrequency() > 1) {
+                    // ne smemo rec bez da izbacimo pre ovog trenutka jer koristimo u funkciji Engine.trueOrFalse()
+                    if (!stopSet.getSerbianStopSetAfter().contains(keyword.getStem()) && !keyword.getStem().equals("stop11stop11stop")) {
+                        Keyword keywordSaved = keywordRepository.save(keyword);
+                        keyword.getTerms().stream().forEach(termFound -> termFound.setKeyword(keywordSaved));
+                        termRepository.saveAll(keyword.getTerms());
+                    }
+                }
+            });
 
         } finally {
             if (tokenStream != null) {
@@ -180,7 +137,8 @@ public class Utilities {
 
     }
 
-    public List<Advertisement> trainAds(String input) {
+    // funkcija koja dodaje u bazu oglase
+    public void trainAds(String input) {
         String[] ads = input.split("stop11stop11stop\n");
         Arrays.stream(ads).forEach(ad -> {
             try {
@@ -191,33 +149,34 @@ public class Utilities {
             }
         });
 
-        return (List<Advertisement>) advertisementRepository.findAll();
+        advertisementRepository.findAll();
     }
 
-    public List<Keyword> testKeywords(String input) throws IOException {
+    // funkcija koja pronalazi kljucne reci i njihove vrednosti u oglasu
+    public List<Keyword> testKeywords(String adTxt) throws IOException {
         List<Keyword> store = this.keywordRepository.findAll();
         TokenStream tokenStream = null;
         try {
             // improvizacija za spajanje prideva sa imenicom
-            input = input.replaceAll("ni ", "ni-");
-            input = input.replaceAll("nji ", "nji-");
+            adTxt = adTxt.replaceAll("ni ", "ni-");
+            adTxt = adTxt.replaceAll("nji ", "nji-");
 
             // hack - kodiranje novog reda ---> ubuduce moze i kodiranje novo oglasa
-            input = input.replaceAll("\n", " newnewnewnew ");
+            adTxt = adTxt.replaceAll("\n", " newnewnewnew ");
 
             // hack - kodiranje poluslozenica ("pro-evropski" umesto "pro" i "evropski")
-            input = input.replaceAll("-+", "abc55abc55abc");
+            adTxt = adTxt.replaceAll("-+", "abc55abc55abc");
             // izbacivanje znakova interpunkcije osim apostrofa i povlaka
-            input = input.replaceAll("[\\p{Punct}&&[^'-]]+", " ");
+            adTxt = adTxt.replaceAll("[\\p{Punct}&&[^'-]]+", " ");
             // izbacinja najcescih engleskih skracenica
-            input = input.replaceAll("(?:'(?:[tdsm]|[vr]e|ll))+\\b", "");
+            adTxt = adTxt.replaceAll("(?:'(?:[tdsm]|[vr]e|ll))+\\b", "");
 
             // izbacivanje reci sa jednim karakterom ---> ubuduce mozda ne izbacivati brojeve
-            input = input.replaceAll(" [a-zA-Z0-9] ", " ");
+            adTxt = adTxt.replaceAll(" [a-zA-Z0-9] ", " ");
 
             // tokenizer
             ClassicTokenizer classicTokenizer = new ClassicTokenizer();
-            classicTokenizer.setReader(new StringReader(input));
+            classicTokenizer.setReader(new StringReader(adTxt));
             // to lowercase
             tokenStream = new LowerCaseFilter(classicTokenizer);
             // engleski filter - remove dots from acronyms (and "'s" but already done manually above)
@@ -280,7 +239,7 @@ public class Utilities {
         }
     }
 
-    // funkcija koja pronalazi slicne oglase
+    // funkcija koja dodaje u bazu oglas i pronalazi slicne oglase
     public List<Advertisement> testAds(String adTxt) {
         Advertisement advertisement = null;
         try {
@@ -321,6 +280,7 @@ public class Utilities {
         return advertisements;
     }
 
+    // funkcija koja pronalazi oglase na osnovu kljucne reci ili reci iz naslova
     public List<Advertisement> searchAds(String adTxt) throws IOException {
         List<Advertisement> advertisementRepository = (List<Advertisement>) this.advertisementRepository.findAll();
         List<Keyword> keywordRepository = this.keywordRepository.findAll();
@@ -345,7 +305,68 @@ public class Utilities {
         return advertisements;
     }
 
-    //funkcija koja vraca prethodnu ili narednu rec u zavisnosti od toga koja ima vise brojeva
+    // pronalazi koren reci
+    private String stem(String term) throws IOException {
+
+        TokenStream tokenStream = null;
+        try {
+
+            // tokenizer
+            ClassicTokenizer classicTokenizer = new ClassicTokenizer();
+            classicTokenizer.setReader(new StringReader(term));
+
+            tokenStream = new PorterStemFilter(classicTokenizer);
+
+            // set za korene reci (zbog duplikata)
+            Set<String> stems = new HashSet<String>();
+            CharTermAttribute token = tokenStream.getAttribute(CharTermAttribute.class);
+            tokenStream.reset();
+            while (tokenStream.incrementToken()) {
+                stems.add(token.toString());
+            }
+
+            // ako je koren manji od 2
+            if (stems.size() != 1) {
+                return null;
+            }
+            String stem = stems.iterator().next();
+            // ako koren nema brojeve i slova
+            if (!stem.matches("[a-zA-Z0-9-]+")) {
+                return null;
+            }
+
+            return stem;
+
+        } finally {
+            if (tokenStream != null) {
+                tokenStream.close();
+            }
+        }
+
+    }
+
+    // dodajemo rec u collection
+    private <T> T find(Collection<T> collection, T example) {
+        for (T element : collection) {
+            if (element.equals(example)) {
+                return element;
+            }
+        }
+        collection.add(example);
+        return example;
+    }
+
+    // ne dodajemo rec u collection
+    private <T> T findOnly(Collection<T> collection, T example) {
+        for (T element : collection) {
+            if (element.equals(example)) {
+                return element;
+            }
+        }
+        return null;
+    }
+
+    // funkcija koja vraca prethodnu ili narednu rec u zavisnosti od toga koja ima vise brojeva
     private String stringWithMoreDigits(String str1, String str2) {
         int count1 = 0;
         for (int i = 0, len = str1.length(); i < len; i++) {
@@ -388,6 +409,4 @@ public class Utilities {
             return false;
         }
     }
-
-
 }

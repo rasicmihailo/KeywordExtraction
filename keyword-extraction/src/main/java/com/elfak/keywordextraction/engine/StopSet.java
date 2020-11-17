@@ -12,6 +12,7 @@ import java.util.List;
 public class StopSet {
 
     List<String> serbianStopSet = new ArrayList<>();
+    List<String> serbianStopSetAfter = new ArrayList<>();
 
     @PostConstruct
     private void initStore() {
@@ -43,5 +44,18 @@ public class StopSet {
         serbianStopSet.add("ovom");
         serbianStopSet.add("ono");
         serbianStopSet.add("mozet");
+        serbianStopSet.add("da");
+        serbianStopSet.add("ima");
+        serbianStopSet.add("iz");
+        serbianStopSet.add("saljem");
+        serbianStopSet.add("samo");
+        serbianStopSet.add("uz");
+        serbianStopSet.add("moze");
+        serbianStopSet.add("po");
+
+        serbianStopSetAfter.add("ne");
+        serbianStopSetAfter.add("ni");
+        serbianStopSetAfter.add("no");
+        serbianStopSetAfter.add("bez");
     }
 }

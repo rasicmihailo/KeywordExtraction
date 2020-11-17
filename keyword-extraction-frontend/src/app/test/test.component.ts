@@ -20,7 +20,7 @@ export class TestComponent implements OnInit {
   ngOnInit() {
   }
   btnClicked() {
-    this.http.post(`http://localhost:8080/check`, new TrainTest(this.text)).subscribe(
+    this.http.post(`http://localhost:8080/check-keywords`, new TrainTest(this.text)).subscribe(
       data => {
         this.keywords = JSON.parse(JSON.stringify(data));
       },
