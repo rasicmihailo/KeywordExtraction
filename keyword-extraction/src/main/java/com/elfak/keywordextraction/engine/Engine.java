@@ -143,7 +143,12 @@ public class Engine {
         Arrays.stream(ads).forEach(ad -> {
             try {
                 String[] titleAndContent = ad.split("\n", 2);
-                advertisementRepository.save(Advertisement.builder().title(titleAndContent[0]).content(titleAndContent[1]).keywords(testKeywords(ad)).build());
+                advertisementRepository.save(
+                        Advertisement.builder()
+                                .title(titleAndContent[0])
+                                .content(titleAndContent[1])
+                                .keywords(testKeywords(ad))
+                                .build());
             } catch (IOException e) {
                 e.printStackTrace();
             }
