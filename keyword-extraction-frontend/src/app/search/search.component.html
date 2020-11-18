@@ -9,7 +9,7 @@
               class="form-control">
           </div>
           <div class="col-sm-3">
-            <button class="btn btn-success" type="submit" (click)="search()">Pretrazi</button>
+            <button class="btn btn-success" type="submit" (click)="search()">Pretraži</button>
           </div>
         </div>
         <div class="row">
@@ -24,15 +24,15 @@
             </div>
         </div>
 
-        <div class="row" style="margin-top: 15px;">
+        <div class="row" style="margin: 15px;">
             <div class="col-sm-6">
                 <div>
-                  <h3 *ngIf="advertisements.length > 0" class="list-group-item-heading">Pronadjeni oglasi</h3>
+                  <h3 *ngIf="advertisements.length > 0" class="list-group-item-heading">Pronađeni oglasi:</h3>
                 </div>
                 <a
                     *ngFor="let ad of advertisements"
                     (click)="advertisementCLicked(ad)"
-                    style="cursor: pointer;"
+                    style="cursor: pointer; margin-top: 10px;"
                     class="list-group-item clearfix">
                     <div class="pull-left">
                         <h4 class="list-group-item-heading">{{ ad.title }}</h4>
@@ -52,14 +52,14 @@
                   </div>
                   <div class="row">
                     <div class="col-xs-12">
-                      <div>
-                        <h4 *ngIf="advertisement.keywords.length > 0" class="list-group-item-heading">Kljucne reci</h4>
+                      <div style="margin: 15px;">
+                        <h4 *ngIf="advertisement.keywords.length > 0" class="list-group-item-heading">Ključne reci:</h4>
                       </div>
                       <ul class="list-group">
                         <li
                           class="list-group-item"
                           *ngFor="let keyword of advertisement.keywords">
-                          {{ keyword.frequency }} - {{ keyword.stem }}: {{ keyword.value }}
+                          {{ keyword.stem }}: {{ keyword.value }}
                         </li>
                       </ul>
                     </div>

@@ -15,14 +15,14 @@
         </div>
     </div>
     <div class="col-md-5" style="margin-left: 20px;">
-        <div>
-            <h4 *ngIf="keywords.length > 0" class="list-group-item-heading">Kljucne reci</h4>
+        <div style="margin: 15px;">
+            <h4 *ngIf="keywords.length > 0" class="list-group-item-heading">Ključne reči:</h4>
         </div>
         <ul class="list-group">
             <li
               class="list-group-item"
               *ngFor="let keyword of keywords">
-              {{ keyword.frequency }} - {{ keyword.stem }}: {{ keyword.boolean }}
+              {{ keyword.stem }} // isBoolean: {{ keyword.boolean }}, frequency: {{ keyword.frequency}}
             </li>
           </ul>
     </div>

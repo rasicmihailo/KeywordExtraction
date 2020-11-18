@@ -86,7 +86,7 @@ public class Engine {
                     stem = stem.replaceAll("abc55abc55abc", "-");
                     if (!stem.equals("newnewnewnew")) {
                         // kreiranje kljucne reci ili pronalazanje postojece
-                        Keyword keyword = find(keywords, new Keyword(stem));
+                        Keyword keyword = findOrAddToCollection(keywords, new Keyword(stem));
                         // drugi parametar (isBoolean) je true ako ni prethodna, ni naredna rec ne sadrze ni jedan broj u sebi, a false ako bar jedna od prethodne i naredne reci sadrzi broj
                         keyword.add(
                                 term.replaceAll("abc55abc55abc", "-"),
@@ -153,8 +153,6 @@ public class Engine {
                 e.printStackTrace();
             }
         });
-
-        advertisementRepository.findAll();
     }
 
     // funkcija koja pronalazi kljucne reci i njihove vrednosti u oglasu
@@ -350,8 +348,8 @@ public class Engine {
 
     }
 
-    // dodajemo rec u collection
-    private <T> T find(Collection<T> collection, T example) {
+    // pronalazimo ili dodajemo rec u collection (ako nije pronadjena)
+    private <T> T findOrAddToCollection(Collection<T> collection, T example) {
         for (T element : collection) {
             if (element.equals(example)) {
                 return element;
@@ -361,7 +359,7 @@ public class Engine {
         return example;
     }
 
-    // ne dodajemo rec u collection
+    // samo pronalazimo rec bez dodavanja reci u collection
     private <T> T findOnly(Collection<T> collection, T example) {
         for (T element : collection) {
             if (element.equals(example)) {
