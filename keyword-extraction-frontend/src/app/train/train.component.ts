@@ -17,7 +17,7 @@ export class TrainComponent implements OnInit {
   ngOnInit() {
   }
   btnClicked() {
-    this.http.post(`http://localhost:8080/train`, new TrainTest(this.text)).subscribe(
+    this.http.post(`http://localhost:8080/train`, new TrainTest('\nstop11stop11stop\n' + this.text)).subscribe(
       data => {
         this.keywords = JSON.parse(JSON.stringify(data));
       },
